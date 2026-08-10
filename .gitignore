@@ -1,2 +1,6 @@
 .venv
 .env
+quickstart.py
+token.json
+credentials.json
+/__pycache__
