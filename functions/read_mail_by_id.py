@@ -32,12 +32,12 @@ def extract_email_body(payload: dict, target_mime):
 
     return None
     
-def read_full_mail():
+def read_mail_by_id(message_id: str):
     try:
         service = get_gmail_service()
         msg_data = service.users().messages().get(
             userId="me", 
-            id="19febca7b230a6bb",
+            id=message_id,
             format="full"
         ).execute()
 
@@ -79,6 +79,3 @@ def read_full_mail():
         print(f"    {cleaned_body}")
     except HttpError as error:
         raise Exception(f"An error occured: {error}")
-
-if __name__ == "__main__":
-    read_full_mail()
