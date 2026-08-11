@@ -38,7 +38,7 @@ def get_recent_mail(limit: int = 5):
             snippet = msg_data.get('snippet', '')
             cleaned_snippet = html.unescape(snippet)
             
-            print(f"- {subject}")
+            print(f"-[{msg["id"]}] {subject}")
             print(f"    {cleaned_snippet}...\n")
     except HttpError as error:
         raise Exception(f"An error occured: {error}")
