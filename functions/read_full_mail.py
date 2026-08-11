@@ -10,40 +10,61 @@ if str(parent_dir) not in sys.path:
 
 from auth import get_gmail_service
 
+def extract_email_body(payload: dict, target_mime):
+    parts_queue = [payload]
+
+    # while there's still parts to check, continue
+    while len(parts_queue) > 0:
+        current_part = parts_queue.pop(0)
+
+        # prevents crashes incase google returns wierd data instead of a `dict`  
+        if isinstance(current_part, dict):
+            # if mime matches the exact mimetype we want (text/plain) and has the actual data
+            # return it
+            if current_part.get("mimeType") == target_mime and "data" in current_part.get("body", {}):
+                return current_part["body"]["data"]
+
+            # if text not found, check for smaller sub-parts in it
+            if "parts" in current_part:
+                for sub_part in current_part["parts"]:
+                    # move smaller parts to the back of the list to check on next loops
+                    parts_queue.append(sub_part)
+
+    return None
+    
 def read_full_mail():
     try:
         service = get_gmail_service()
         msg_data = service.users().messages().get(
             userId="me", 
             id="19febca7b230a6bb",
-            format="full",
-            metadataHeaders=["Subject"]
+            format="full"
         ).execute()
 
-        headers = msg_data["payload"]["headers"]
-        parts = msg_data["payload"].get("parts", [])
+        payload = msg_data.get("payload", {})
+        headers = payload.get("headers", [])
         
         subject = "Absolutely Nothing"
+        msg_mime = payload.get("mimeType")
         msg_body = None
-
-        # checks if msg body is sitting directly in main payloaod
-        if "data" in msg_data["payload"]["body"]:
-            msg_body = msg_data["payload"]["body"]["data"]
-
-        # or buried in part list?
-        else:
-            for part in parts:
-                if part["mimeType"] == "text/plain":
-                    msg_body = part["body"]["data"]
-                    break 
 
         for header in headers:
             if header["name"].lower() == "subject":
                 subject = header["value"]
                 break
                 
+        # checks if msg body is sitting directly at the top in the payload (plain text/html)
+        if msg_mime == "text/plain" and "data" in payload.get("body", {}):
+            msg_body = payload["body"]["data"]
+        elif msg_mime == "text/html" and "data" in payload.get("body", {}):
+            msg_body = payload["body"]["data"]
+            
+        # else, dig for plain text. if that fails, dig for HTML.
+        else:
+            msg_body = extract_email_body(payload, "text/plain") or extract_email_body(payload, "text/html")
+
         if not msg_body:
-            print(f"- {subject}\n   [No plain text body found in this email]")
+            print(f"- {subject}\n   [No readable body found in this email]")
             return
             
         # kept getting `binascii.Error: Incorrect padding`
