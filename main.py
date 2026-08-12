@@ -29,6 +29,10 @@ def main():
         read_mail_by_id(message_id=args.read)
 
     elif args.send:
+        if not args.to or not args.subject or not args.body:
+            print("Error: --send requires --to, --subject, and --body flags.")
+            return
+        
         send_mail(args.to, args.subject, args.body)
         print("Success, email sent!")
     else:
