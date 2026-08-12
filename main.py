@@ -4,6 +4,7 @@ from auth import get_gmail_service
 from functions.get_recent_mail import get_recent_mail
 from functions.read_mail_by_id import read_mail_by_id
 from functions.send_mail import send_mail
+from functions.archive_mail import archive_mail
 
 def main():
     parser = argparse.ArgumentParser(description="Term-Mail: Your Terminal Email Client")
@@ -15,6 +16,7 @@ def main():
     parser.add_argument("--subject", type=str, metavar="subject", help="Mail Subject")
     parser.add_argument("--body", type=str, help="Body of the mail")
     parser.add_argument("--send", action="store_true", help="Sends an email")
+    parser.add_argument("--archive", type=str, metavar="ID", help="Archives a mail using the ID")
     args = parser.parse_args()
 
     if args.login:
@@ -34,6 +36,9 @@ def main():
         limit = args.recent if args.recent else 10
         get_recent_mail(limit=limit, query=args.search)
 
+    elif args.archive:
+        archive_mail(message_id=args.archive)
+        
     elif args.send:
         if args.send and not args.to and not args.subject and not args.body:
             # this creates a temporary .txt file and allow users to modify it
