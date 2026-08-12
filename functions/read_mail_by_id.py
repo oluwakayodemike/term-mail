@@ -1,4 +1,5 @@
 from googleapiclient.errors import HttpError
+from functions.mark_as_read import mark_as_read
 import base64
 import sys
 from pathlib import Path
@@ -74,7 +75,8 @@ def read_mail_by_id(message_id: str):
             msg_body += "=" * (4 - missing_padding)
             
         cleaned_body = base64.urlsafe_b64decode(msg_body).decode("utf-8", errors="ignore")
-        
+
+        mark_as_read(message_id)
         print(f"- {subject}")
         print(f"    {cleaned_body}")
     except HttpError as error:
