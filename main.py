@@ -1,4 +1,5 @@
 import argparse
+import tempfile, subprocess, os
 from auth import get_gmail_service
 from functions.get_recent_mail import get_recent_mail
 from functions.read_mail_by_id import read_mail_by_id
@@ -29,12 +30,30 @@ def main():
         read_mail_by_id(message_id=args.read)
 
     elif args.send:
-        if not args.to or not args.subject or not args.body:
-            print("Error: --send requires --to, --subject, and --body flags.")
+        if args.send and not args.to and not args.subject and not args.body:
+            # this creates a temporary .txt file and allow users to modify it
+            # then captures the input
+            tf = tempfile.NamedTemporaryFile(suffix=".txt", delete=False) # delete=False stops file from instantly deleting on tf.close() 
+            try:
+                tf.close()
+                subprocess.run(["vi", tf.name], check=True)
+                with open(tf.name, 'r') as f:
+                    text = f.read()
+
+                print("email:", text)
+            finally:
+                # clean up temporary file
+                if os.path.exists(tf.name):
+                    os.remove(tf.name)
+
+        elif not args.to or not args.subject or not args.body:
+            print("Error: --send requires either ALL flags (--to, --subject, and --body flags) or no flags at all to open an editor.")
             return
-        
-        send_mail(args.to, args.subject, args.body)
-        print("Success, email sent!")
+
+        else:
+            print(f"sending email to {args.to}...")
+            send_mail(args.to, args.subject, args.body)
+            print("Success, email sent!")
     else:
         parser.print_help()
         
