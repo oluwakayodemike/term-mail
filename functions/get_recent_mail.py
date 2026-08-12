@@ -10,10 +10,10 @@ if str(parent_dir) not in sys.path:
     
 from auth import get_gmail_service
 
-def get_recent_mail(limit: int = 5):
+def get_recent_mail(limit: int = 5, query: str = ""):
     try:
         service = get_gmail_service()
-        results = service.users().messages().list(userId="me", labelIds=['INBOX'], maxResults=limit).execute()
+        results = service.users().messages().list(userId="me", labelIds=['INBOX'], maxResults=limit, q=query).execute()
         messages = results.get('messages', [])
 
         if not messages:

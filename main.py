@@ -9,6 +9,7 @@ def main():
     parser = argparse.ArgumentParser(description="Term-Mail: Your Terminal Email Client")
     parser.add_argument("--login", action="store_true", help="Connect to Google and test authentication")
     parser.add_argument("--recent", type=int, metavar="N", help="Read the N of most recent emails")
+    parser.add_argument("--search", type=str, metavar="is:unread", help="Search gmail using gmail syntax... i.e is:unread")
     parser.add_argument("--read", type=str, metavar="ID", help="Read the full body of a mail by its ID")
     parser.add_argument("--to", type=str, metavar="test@test.com", help="The mail of the receipient")
     parser.add_argument("--subject", type=str, metavar="subject", help="Mail Subject")
@@ -28,6 +29,10 @@ def main():
 
     elif args.read:
         read_mail_by_id(message_id=args.read)
+        
+    elif args.search:
+        limit = args.recent if args.recent else 10
+        get_recent_mail(limit=limit, query=args.search)
 
     elif args.send:
         if args.send and not args.to and not args.subject and not args.body:
