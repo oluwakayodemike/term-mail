@@ -33,14 +33,42 @@ def main():
         if args.send and not args.to and not args.subject and not args.body:
             # this creates a temporary .txt file and allow users to modify it
             # then captures the input
-            tf = tempfile.NamedTemporaryFile(suffix=".txt", delete=False) # delete=False stops file from instantly deleting on tf.close() 
+            tf = tempfile.NamedTemporaryFile(mode="w+",suffix=".txt", delete=False) # delete=False stops file from instantly deleting on tf.close() 
             try:
+                # template for user to follow
+                template = (
+                    "To: \n"
+                    "Subject: \n"
+                    "\n"
+                    "# ---email body goes below this line---\n"
+                )
+                tf.write(template)
                 tf.close()
+                
                 subprocess.run(["vi", tf.name], check=True)
-                with open(tf.name, 'r') as f:
-                    text = f.read()
 
-                print("email:", text)
+                to_addr, subject, bodies = None, None, []
+                
+                with open(tf.name, 'r') as f:
+                    for line in f:
+                        if line.startswith("To:"):
+                            to_addr = line.replace("To:", "").strip()
+                        elif line.startswith("Subject:"):
+                            subject = line.replace("Subject:", "").strip()
+                        elif not line.startswith("#"): # ignore comment
+                            bodies.append(line)
+
+                body_text = "".join(bodies).strip()
+
+                if not to_addr or not subject or not body_text:
+                    print("Error: email not sent. some fields were blank")
+                    return
+                    
+
+                print(body_text)
+                print(f"sending email to {to_addr}...")
+                send_mail(to_addr, subject, body_text)
+
             finally:
                 # clean up temporary file
                 if os.path.exists(tf.name):
