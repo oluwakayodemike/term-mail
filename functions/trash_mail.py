@@ -9,7 +9,7 @@ if str(parent_dir) not in sys.path:
 
 from auth import get_gmail_service
 
-def thrash_mail_by_id(message_id: str):
+def trash_mail_by_id(message_id: str):
     try:
         service = get_gmail_service()
 
@@ -18,5 +18,6 @@ def thrash_mail_by_id(message_id: str):
             id=message_id
         ).execute()
 
+        print(f"mail `{message_id}` deleted")
     except HttpError as error:
         raise Exception(f"An error occured while deleting mail: {error}")

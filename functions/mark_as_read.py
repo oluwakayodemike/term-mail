@@ -21,6 +21,5 @@ def mark_as_read(message_id: str):
             }
         ).execute()
         
-
     except HttpError as error:
         raise Exception(f"An error occured marking as read: {error}")

@@ -5,6 +5,7 @@ from functions.get_recent_mail import get_recent_mail
 from functions.read_mail_by_id import read_mail_by_id
 from functions.send_mail import send_mail
 from functions.archive_mail import archive_mail
+from functions.trash_mail import trash_mail_by_id
 
 def main():
     parser = argparse.ArgumentParser(description="Term-Mail: Your Terminal Email Client")
@@ -17,6 +18,7 @@ def main():
     parser.add_argument("--body", type=str, help="Body of the mail")
     parser.add_argument("--send", action="store_true", help="Sends an email")
     parser.add_argument("--archive", type=str, metavar="ID", help="Archives a mail using the ID")
+    parser.add_argument("--trash", type=str, metavar="ID", help="Deletes a mail using the ID")
     args = parser.parse_args()
 
     if args.login:
@@ -38,6 +40,9 @@ def main():
 
     elif args.archive:
         archive_mail(message_id=args.archive)
+
+    elif args.trash:
+        trash_mail_by_id(message_id=args.trash)
         
     elif args.send:
         if args.send and not args.to and not args.subject and not args.body:
