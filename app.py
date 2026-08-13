@@ -1,59 +1,64 @@
 from textual.app import App, ComposeResult
 from textual.containers import HorizontalScroll, VerticalScroll
 from textual.screen import Screen
-from textual.widgets import Placeholder, Header, Footer
+from textual.widgets import Header, Footer, Static
 
-class ColumnsContainer(Placeholder):
-    DEFAULT_CSS = """
-    ColumnsContainer {
-        width: 1fr;
-        height: 1fr;
-        border: solid white;
-    }
-    """
+class EmailItem(Static):
+    def __init__(self, text: str, id: str) -> None:
+        super().__init__(text, id=id)
 
-class EmailItem(Placeholder):
     DEFAULT_CSS = """
-    EmailItem {
-        height: 5;
-        width: 1fr;
-        border: tall $background;
-    }
-    """
+        EmailItem {
+            height: 3;
+            width: 1fr;
+            color: #cdd6f4;
+            background: #1e1e2e;
+            padding: 0 1;
+            border-bottom: solid #313244;
+        }
+        """
 
 class LeftColumn(VerticalScroll):
     DEFAULT_CSS = """
     LeftColumn {
         height: 1fr;
         width: 35;
-        margin: 0 2;
-        border-right: solid white;
+        border-right: solid #89b4fa;
+        background: #1e1e2e;
     }
     """
     def compose(self) -> ComposeResult:
         for mail_no in range(1, 20):
-            yield EmailItem(id=f"Mail{mail_no}")
-
+            fake_text = f"{mail_no}: Mike Test\nSnip:What are you?"
+            yield EmailItem(text=fake_text, id=f"Mail{mail_no}")
+            
 class RightColumn(VerticalScroll):
     DEFAULT_CSS = """
     RightColumn {
         height: 1fr;
         width: 1fr;
-        margin: 0 2;
+        padding: 1 2;
+        background: #1e1e2e;
+        color: #cdd6f4;
     }
     """
     def compose(self) -> ComposeResult:
-        yield Placeholder("This is where the email body goes ")
+        # Dummy body text
+        dummy_body = "18.09.2023 21:19\n\nHello Mike,\n\nThis is where the email content will eventually render after wiring"
+        yield Static(dummy_body)
 
 class MailScreen(Screen):
+    DEFAULT_CSS = """
+    MailScreen {
+        background: #1e1e2e;
+    }
+    """
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  
-        # yield ColumnsContainer(id="ColumnsContainer")
         with HorizontalScroll():
             yield LeftColumn()
             yield RightColumn()
         yield Footer(id="Footer")
-        
 
 class LayoutApp(App):
     def on_mount(self) -> None:
