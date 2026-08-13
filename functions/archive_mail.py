@@ -12,7 +12,7 @@ from auth import get_gmail_service
 def archive_mail(message_id: str):
     try:
         service = get_gmail_service()
-
+        
         service.users().messages().modify(
             userId="me",
             id=message_id,
