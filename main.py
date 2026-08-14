@@ -29,8 +29,12 @@ def main():
             print("Success...You are fully authenticated!.")
             
     elif args.recent:
-        get_recent_mail(limit=args.recent)
+        emails = get_recent_mail(limit=args.recent)
 
+        for email in emails:
+            print(f"-[{email["id"]}]: {email["subject"]}")
+            print(f"    {email["snippet"]}")
+        
     elif args.read:
         read_mail_by_id(message_id=args.read)
         
