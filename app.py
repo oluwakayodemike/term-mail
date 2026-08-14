@@ -29,27 +29,27 @@ class EmailItem(Horizontal):
     def compose(self) -> ComposeResult:
         yield Static(self.email_data["sender_name"], classes="sender")
         
-        display_text = f"{self.email_data['subject']} - {self.email_data['snippet']}"
+        display_text = f"{self.email_data['subject']} - {self.email_data['snippet'][:45]}"
         yield Static(display_text, classes="subject")
         
 class MainMenu(VerticalScroll):
     DEFAULT_CSS = """
-    MainMenu {
-        height: 1fr;
-        width: 35;
-        background: #1e1e2e;
-    }
+        MainMenu {
+            height: 1fr;
+            width: 35;
+            background: #1e1e2e;
+        }
     """
     pass
 
 class InboxPane(VerticalScroll):
     DEFAULT_CSS = """
-    InboxPane {
-        height: 1fr;
-        width: 1fr;
-        border-right: solid #89b4fa;
-        background: #1e1e2e;
-    }
+        InboxPane {
+            height: 1fr;
+            width: 1fr;
+            border-right: solid #89b4fa;
+            background: #1e1e2e;
+        }
     """
     def compose(self) -> ComposeResult:
         emails = get_recent_mail(limit=15)
@@ -73,9 +73,9 @@ class InboxPane(VerticalScroll):
 
 class MailScreen(Screen):
     DEFAULT_CSS = """
-    MailScreen {
-        background: #1e1e2e;
-    }
+        MailScreen {
+            background: #1e1e2e;
+        }
     """
     def compose(self) -> ComposeResult:
         yield Header(id="Header")  
