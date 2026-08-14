@@ -1,14 +1,10 @@
-from unittest.mock import DEFAULT
 from textual.app import App, ComposeResult
-from textual.containers import HorizontalScroll, VerticalScroll
+from textual.containers import HorizontalScroll, VerticalScroll, Horizontal
 from textual.screen import Screen
 from textual.widgets import Header, Footer, Static
 from functions.get_recent_mail import get_recent_mail
 
-class EmailItem(Static):
-    def __init__(self, text: str, id: str) -> None:
-        super().__init__(text, id=id)
-
+class EmailItem(Horizontal):
     DEFAULT_CSS = """
         EmailItem {
             height: 3;
@@ -18,7 +14,24 @@ class EmailItem(Static):
             padding: 0 1;
             border-bottom: solid #313244;
         }
-        """
+        
+        .sender {
+            width: 35;
+        }
+        
+        .subject {
+            width: 1fr;
+        }
+    """
+    def __init__(self, email_data: dict, id: str) -> None:
+        super().__init__(id=id)
+        self.email_data = email_data
+    def compose(self) -> ComposeResult:
+        yield Static(self.email_data["sender_name"], classes="sender")
+        
+        display_text = f"{self.email_data['subject']} - {self.email_data['snippet']}"
+        yield Static(display_text, classes="subject")
+        
 class MainMenu(VerticalScroll):
     DEFAULT_CSS = """
     MainMenu {
@@ -29,24 +42,9 @@ class MainMenu(VerticalScroll):
     """
     pass
 
-class SenderColumn(VerticalScroll):
+class InboxPane(VerticalScroll):
     DEFAULT_CSS = """
-    SenderColumn {
-        height: 1fr;
-        width: 35;
-        background: #1e1e2e;
-    }
-    """
-    def compose(self) -> ComposeResult:
-        emails = get_recent_mail(limit=15)
-
-        for mail in emails:
-            display_text = f"{mail["sender_name"]}"
-            yield EmailItem(text=display_text, id=f"Mail{mail["id"]}")
-            
-class LeftColumn(VerticalScroll):
-    DEFAULT_CSS = """
-    LeftColumn {
+    InboxPane {
         height: 1fr;
         width: 1fr;
         border-right: solid #89b4fa;
@@ -55,11 +53,9 @@ class LeftColumn(VerticalScroll):
     """
     def compose(self) -> ComposeResult:
         emails = get_recent_mail(limit=15)
-
         for mail in emails:
-            display_text = f"{mail["subject"]} - {mail["snippet"]}"
-            yield EmailItem(text=display_text, id=f"Mail{mail["id"]}")
-            
+            yield EmailItem(email_data=mail, id=f"Mail_{mail["id"]}")
+
 # class RightColumn(VerticalScroll):
 #     DEFAULT_CSS = """
 #     RightColumn {
@@ -85,9 +81,7 @@ class MailScreen(Screen):
         yield Header(id="Header")  
         with HorizontalScroll():
             yield MainMenu()
-            yield SenderColumn()
-            yield LeftColumn()
-            # yield RightColumn()
+            yield InboxPane()
         yield Footer(id="Footer")
 
 class LayoutApp(App):
