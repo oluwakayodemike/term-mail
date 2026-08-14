@@ -1,4 +1,3 @@
-from typing import Dict
 from googleapiclient.errors import HttpError
 import html
 import sys
@@ -38,9 +37,12 @@ def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, s
             for header in headers:
                 if header["name"].lower() == "from":
                     sender = header["value"].split("<")
-
-                    sender_name = sender[0].strip()
-                    sender_mail = sender[1].replace(">", "")
+                    if "<" in header["value"]:
+                        sender_name = sender[0].strip()
+                        sender_mail = sender[1].replace(">", "")
+                    else:
+                        sender_name = sender[0].strip()
+                        sender_mail = sender[0].strip()
                 if header["name"].lower() == 'subject':
                     subject = header["value"]
 
