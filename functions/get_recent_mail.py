@@ -26,23 +26,31 @@ def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, s
                 userId="me",
                 id=msg["id"],
                 format="metadata",
-                metadataHeaders=["Subject"]
+                metadataHeaders=["Subject", "From"]
             ).execute()
 
             headers = msg_data["payload"]["headers"]
-            
+
+            sender_name = "Maik"
+            sender_mail = "placeholder@mike.dev"
             subject = "Absolutely Nothing"
 
             for header in headers:
+                if header["name"].lower() == "from":
+                    sender = header["value"].split("<")
+
+                    sender_name = sender[0].strip()
+                    sender_mail = sender[1].replace(">", "")
                 if header["name"].lower() == 'subject':
                     subject = header["value"]
-                    break
 
             snippet = msg_data.get('snippet', '')
             cleaned_snippet = html.unescape(snippet)
 
             recent_mail.append({
                 "id": msg["id"],
+                "sender_name": sender_name,
+                "sender_mail": sender_mail,
                 "subject": subject,
                 "snippet": cleaned_snippet
             })
