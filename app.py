@@ -22,6 +22,10 @@ class EmailItem(Horizontal):
         .subject {
             width: 1fr;
         }
+
+        .date {
+            width: 10;
+        }
     """
     def __init__(self, email_data: dict, id: str) -> None:
         super().__init__(id=id)
@@ -31,6 +35,7 @@ class EmailItem(Horizontal):
         
         display_text = f"{self.email_data['subject']} - {self.email_data['snippet'][:45]}"
         yield Static(display_text, classes="subject")
+        yield Static(self.email_data["msg_date"], classes="date")
         
 class MainMenu(VerticalScroll):
     DEFAULT_CSS = """

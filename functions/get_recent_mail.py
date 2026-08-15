@@ -1,4 +1,5 @@
 from googleapiclient.errors import HttpError
+from email.utils import parsedate_to_datetime
 import html
 import sys
 from pathlib import Path
@@ -10,7 +11,7 @@ if str(parent_dir) not in sys.path:
     
 from auth import get_gmail_service
 
-def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, str]]:
+def get_recent_mail(limit: int = 5, query: str = "in:inbox category:primary") -> list[dict[str, str]]:
     recent_mail = []
     try:
         service = get_gmail_service()
@@ -25,7 +26,7 @@ def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, s
                 userId="me",
                 id=msg["id"],
                 format="metadata",
-                metadataHeaders=["Subject", "From"]
+                metadataHeaders=["Subject", "From", "Date"]
             ).execute()
 
             headers = msg_data["payload"]["headers"]
@@ -33,7 +34,8 @@ def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, s
             sender_name = "Maik"
             sender_mail = "placeholder@mike.dev"
             subject = "Absolutely Nothing"
-
+            msg_date = "unknown"
+            
             for header in headers:
                 if header["name"].lower() == "from":
                     sender = header["value"].split("<")
@@ -45,12 +47,17 @@ def get_recent_mail(limit: int = 5, query: str = "in:inbox") -> list[dict[str, s
                         sender_mail = sender[0].strip()
                 if header["name"].lower() == 'subject':
                     subject = header["value"]
+                if header["name"].lower() == 'date':
+                    raw_date = header["value"]
+                    parsed_date = parsedate_to_datetime(raw_date)
+                    msg_date = parsed_date.strftime("%b %d")
 
             snippet = msg_data.get('snippet', '')
             cleaned_snippet = html.unescape(snippet)
 
             recent_mail.append({
                 "id": msg["id"],
+                "msg_date": msg_date,
                 "sender_name": sender_name,
                 "sender_mail": sender_mail,
                 "subject": subject,
