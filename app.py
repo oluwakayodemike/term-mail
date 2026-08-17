@@ -13,6 +13,7 @@ class EmailItem(Horizontal):
             background: #1e1e2e;
             padding: 0 1;
             border-bottom: solid #313244;
+            overflow-y: scroll
         }
         
         .sender {
@@ -21,10 +22,12 @@ class EmailItem(Horizontal):
         
         .subject {
             width: 1fr;
+            overflow: hidden;
         }
 
         .date {
             width: 10;
+            content-align: left middle;
         }
     """
     def __init__(self, email_data: dict, id: str) -> None:
@@ -44,8 +47,16 @@ class MainMenu(VerticalScroll):
             width: 35;
             background: #1e1e2e;
         }
+        MainMenu Static {
+            margin-bottom: 1;
+            color: #cdd6f4;
+        }
     """
-    pass
+    def compose(self) -> ComposeResult:
+        yield Static("Inbox")
+        yield Static("Sent")
+        yield Static("Drafts")
+        yield Static("Trash")
 
 class InboxPane(VerticalScroll):
     DEFAULT_CSS = """
