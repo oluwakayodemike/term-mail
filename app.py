@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import HorizontalScroll, VerticalScroll, Horizontal
 from textual.screen import Screen
-from textual.widgets import Header, Footer, Static
+from textual.widgets import Header, Footer, Static, ListView, ListItem
 from functions.get_recent_mail import get_recent_mail
 
 class EmailItem(Horizontal):
@@ -40,7 +40,7 @@ class EmailItem(Horizontal):
         yield Static(display_text, classes="subject")
         yield Static(self.email_data["msg_date"], classes="date")
         
-class MainMenu(VerticalScroll):
+class MainMenu(ListView):
     DEFAULT_CSS = """
         MainMenu {
             height: 1fr;
@@ -48,15 +48,18 @@ class MainMenu(VerticalScroll):
             background: #1e1e2e;
         }
         MainMenu Static {
-            margin-bottom: 1;
+            margin: 1 1;
             color: #cdd6f4;
+        }
+        ListItem:hover {
+            background: #313244;
         }
     """
     def compose(self) -> ComposeResult:
-        yield Static("Inbox")
-        yield Static("Sent")
-        yield Static("Drafts")
-        yield Static("Trash")
+        yield ListItem("Inbox")
+        yield ListItem("Sent")
+        yield ListItem("Drafts")
+        yield ListItem("Trash")
 
 class InboxPane(VerticalScroll):
     DEFAULT_CSS = """
