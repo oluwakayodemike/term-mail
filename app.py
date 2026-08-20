@@ -1,4 +1,3 @@
-from ctypes.util import test
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, ListView, ListItem
@@ -62,10 +61,10 @@ class MainMenu(ListView):
         self.border_title = "Categories"
 
     def compose(self) -> ComposeResult:
-        yield ListItem(Static("Inbox"))
-        yield ListItem(Static("Sent"))
-        yield ListItem(Static("Drafts"))
-        yield ListItem(Static("Trash"))
+        yield ListItem(Static("Inbox"), id="inbox")
+        yield ListItem(Static("Sent"), id="sent")
+        yield ListItem(Static("Drafts"), id="draft")
+        yield ListItem(Static("Trash"), id="trash")
 
 class MailViewer(Vertical):
     DEFAULT_CSS = """
@@ -94,8 +93,18 @@ class InboxPane(ListView):
         }
     """
     def on_mount(self) -> None:
-        self.border_title = "Category Results"
+        self.border_title = "Inbox Results"
 
+    def load_new_category(self, n_cat: str) -> None:
+        f_string = f"in:{n_cat}"
+
+        self.clear()
+
+        emails = get_recent_mail(limit=15, query=f_string)
+
+        for mail in emails:
+            self.append(EmailItem(email_data=mail, id=f"Mail_{mail['id']}"))
+        
     def compose(self) -> ComposeResult:
         emails = get_recent_mail(limit=15)
         for mail in emails:
@@ -126,9 +135,20 @@ class MailScreen(Horizontal):
         msg = f"from: {email_info['sender_name']}\nsubject: {email_info['subject']}"
 
         self.query_one("#body-text", Static).update(msg)
+
+    @on(ListView.Selected, "#sidebar-menu")
+    def handle_selected_category(self, event: ListView.Selected) -> None:
+        clicked_category = event.item.id
         
+        if clicked_category:
+            display_name = clicked_category.capitalize()
+
+            inbox_pane = self.query_one("#inbox-list", InboxPane)
+            inbox_pane.border_title = f"{display_name} Results"
+            inbox_pane.load_new_category(clicked_category)
+            
     def compose(self) -> ComposeResult:
-        yield MainMenu()
+        yield MainMenu(id="sidebar-menu")
         yield RightWorkspace()
 
 class LayoutApp(App):
