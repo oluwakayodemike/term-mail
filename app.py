@@ -1,19 +1,18 @@
 from textual.app import App, ComposeResult
-from textual.containers import HorizontalScroll, VerticalScroll, Horizontal
-from textual.screen import Screen
+from textual.containers import Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, ListView, ListItem
 from functions.get_recent_mail import get_recent_mail
 
-class EmailItem(Horizontal):
+class EmailItem(ListItem):
     DEFAULT_CSS = """
         EmailItem {
             height: 3;
             width: 1fr;
             color: #cdd6f4;
             background: #1e1e2e;
+            layout: horizontal;
             padding: 0 1;
             border-bottom: solid #313244;
-            overflow-y: scroll
         }
         
         .sender {
@@ -39,74 +38,93 @@ class EmailItem(Horizontal):
         display_text = f"{self.email_data['subject']} - {self.email_data['snippet'][:45]}"
         yield Static(display_text, classes="subject")
         yield Static(self.email_data["msg_date"], classes="date")
-        
+
 class MainMenu(ListView):
     DEFAULT_CSS = """
         MainMenu {
+            width: 30;
             height: 1fr;
-            width: 35;
+            border: solid #89b4fa;
             background: #1e1e2e;
         }
-        MainMenu Static {
-            margin: 1 1;
-            color: #cdd6f4;
+        
+        ListItem {
+            padding: 0 2;
         }
+        
         ListItem:hover {
             background: #313244;
         }
     """
-    def compose(self) -> ComposeResult:
-        yield ListItem("Inbox")
-        yield ListItem("Sent")
-        yield ListItem("Drafts")
-        yield ListItem("Trash")
+    def on_mount(self) -> None:
+        self.border_title = "Categories"
 
-class InboxPane(VerticalScroll):
+    def compose(self) -> ComposeResult:
+        yield ListItem(Static("Inbox"))
+        yield ListItem(Static("Sent"))
+        yield ListItem(Static("Drafts"))
+        yield ListItem(Static("Trash"))
+
+class MailViewer(Vertical):
     DEFAULT_CSS = """
-        InboxPane {
-            height: 1fr;
+        MailViewer {
+            height: 1.5fr;
             width: 1fr;
-            border-right: solid #89b4fa;
+            border: solid #a6e3a1;
             background: #1e1e2e;
+            padding: 1 2;
         }
     """
+    def on_mount(self) -> None:
+        self.border_title = "Email Body"
+
+    def compose(self) -> ComposeResult:
+        yield Static("Selected Emails will appear here...", id="body-text")
+        
+class InboxPane(ListView):
+    DEFAULT_CSS = """
+        InboxPane {
+            height: 1fr; 
+            width: 1fr;
+            border: solid #f9e2af;
+            background: #1e1e2e;
+            overflow-y: scroll;
+        }
+    """
+    def on_mount(self) -> None:
+        self.border_title = "Category Results"
+
     def compose(self) -> ComposeResult:
         emails = get_recent_mail(limit=15)
         for mail in emails:
-            yield EmailItem(email_data=mail, id=f"Mail_{mail["id"]}")
+            yield EmailItem(email_data=mail, id=f"Mail_{mail['id']}")
 
-# class RightColumn(VerticalScroll):
-#     DEFAULT_CSS = """
-#     RightColumn {
-#         height: 1fr;
-#         width: 1fr;
-#         padding: 1 2;
-#         background: #1e1e2e;
-#         color: #cdd6f4;
-#     }
-#     """
-#     def compose(self) -> ComposeResult:
-#         # Dummy body text
-#         dummy_body = "18.09.2023 21:19\n\nHello Mike,\n\nThis is where the email content will eventually render after wiring"
-#         yield Static(dummy_body)
+class RightWorkspace(Vertical):
+    DEFAULT_CSS = """
+    RightWorkspace {
+        width: 1fr;
+        height: 1fr;
+    }
+    """
+    def compose(self) -> ComposeResult:
+        yield MailViewer()
+        yield InboxPane()
 
-class MailScreen(Screen):
+class MailScreen(Horizontal):
     DEFAULT_CSS = """
         MailScreen {
             background: #1e1e2e;
         }
     """
     def compose(self) -> ComposeResult:
-        yield Header(id="Header")  
-        with HorizontalScroll():
-            yield MainMenu()
-            yield InboxPane()
-        yield Footer(id="Footer")
+        yield MainMenu()
+        yield RightWorkspace()
 
 class LayoutApp(App):
-    def on_mount(self) -> None:
-        self.push_screen(MailScreen())
-
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield MailScreen()
+        yield Footer()
 
 if __name__ == "__main__":
     app = LayoutApp()
