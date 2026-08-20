@@ -95,6 +95,7 @@ class InboxPane(ListView):
     def on_mount(self) -> None:
         self.border_title = "Inbox Results"
 
+    # offload the slow API call to a background thread so the UI doesn't freeze
     @work(thread=True)
     def fetch_mails_in_background(self, cat_query: str) -> None:
         f_string = f"in:{cat_query}"
