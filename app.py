@@ -1,6 +1,8 @@
+from ctypes.util import test
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, ListView, ListItem
+from textual import on
 from functions.get_recent_mail import get_recent_mail
 
 class EmailItem(ListItem):
@@ -108,7 +110,7 @@ class RightWorkspace(Vertical):
     """
     def compose(self) -> ComposeResult:
         yield MailViewer()
-        yield InboxPane()
+        yield InboxPane(id="inbox-list")
 
 class MailScreen(Horizontal):
     DEFAULT_CSS = """
@@ -116,6 +118,15 @@ class MailScreen(Horizontal):
             background: #1e1e2e;
         }
     """
+    @on(ListView.Selected, "#inbox-list")
+    def handle_selected_mail(self, event: ListView.Selected) -> None:
+        selected_row = event.item
+        email_info = selected_row.email_data
+
+        msg = f"from: {email_info['sender_name']}\nsubject: {email_info['subject']}"
+
+        self.query_one("#body-text", Static).update(msg)
+        
     def compose(self) -> ComposeResult:
         yield MainMenu()
         yield RightWorkspace()
