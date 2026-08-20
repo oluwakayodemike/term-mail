@@ -1,7 +1,7 @@
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, ListView, ListItem
-from textual import on
+from textual import on, work
 from functions.get_recent_mail import get_recent_mail
 
 class EmailItem(ListItem):
@@ -95,12 +95,15 @@ class InboxPane(ListView):
     def on_mount(self) -> None:
         self.border_title = "Inbox Results"
 
-    def load_new_category(self, n_cat: str) -> None:
-        f_string = f"in:{n_cat}"
+    @work(thread=True)
+    def fetch_mails_in_background(self, cat_query: str) -> None:
+        f_string = f"in:{cat_query}"
+        emails = get_recent_mail(limit=50, query=f_string)
 
+        self.app.call_from_thread(self.update_ui_with_new_mails, emails)
+        
+    def update_ui_with_new_mails(self, emails: list[dict]) -> None:
         self.clear()
-
-        emails = get_recent_mail(limit=15, query=f_string)
 
         for mail in emails:
             self.append(EmailItem(email_data=mail, id=f"Mail_{mail['id']}"))
@@ -145,7 +148,7 @@ class MailScreen(Horizontal):
 
             inbox_pane = self.query_one("#inbox-list", InboxPane)
             inbox_pane.border_title = f"{display_name} Results"
-            inbox_pane.load_new_category(clicked_category)
+            inbox_pane.fetch_mails_in_background(clicked_category)
             
     def compose(self) -> ComposeResult:
         yield MainMenu(id="sidebar-menu")
